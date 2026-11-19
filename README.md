@@ -1,4 +1,4 @@
-# Fitroom Studio 👗
+# FitRoom Studio 👗
 ### Your Personal Wardrobe & Styling Atelier
 
 **FitRoom Studio** is a smart fashion and personal styling platform designed to help users explore their style, organize their wardrobe, and make better outfit choices. It aims to simplify everyday fashion decisions through a personalized digital styling experience.
