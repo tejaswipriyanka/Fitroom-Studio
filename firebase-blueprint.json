@@ -1,0 +1,302 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Personal styling profile and physical proportion preferences for a Fitroom Studio user.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the profile owner.",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email address.",
+          "maxLength": 160
+        },
+        "avatarInitials": {
+          "type": "string",
+          "description": "Two-letter initials.",
+          "minLength": 1,
+          "maxLength": 4
+        },
+        "status": {
+          "type": "string",
+          "description": "Account status label.",
+          "maxLength": 40
+        },
+        "isGuest": {
+          "type": "boolean",
+          "description": "Whether the profile belongs to a guest session."
+        },
+        "joinedAt": {
+          "type": "string",
+          "description": "Readable join label.",
+          "maxLength": 40
+        },
+        "genderPreference": {
+          "type": "string",
+          "description": "Preferred garment silhouette category.",
+          "maxLength": 60
+        },
+        "age": {
+          "type": "integer",
+          "description": "Optional user age."
+        },
+        "heightCm": {
+          "type": "integer",
+          "description": "Height in centimeters."
+        },
+        "skinToneMonk": {
+          "type": "integer",
+          "description": "Monk Skin Tone scale value between 1 and 10."
+        },
+        "undertone": {
+          "type": "string",
+          "enum": ["warm", "cool", "neutral", "olive"],
+          "description": "Skin undertone classification."
+        },
+        "bodyShape": {
+          "type": "string",
+          "description": "Optional body shape preference.",
+          "maxLength": 60
+        },
+        "colorPreferences": {
+          "type": "string",
+          "description": "Optional preferred color palettes.",
+          "maxLength": 160
+        },
+        "clothingPreferences": {
+          "type": "string",
+          "description": "Optional preferred clothing styles or cuts.",
+          "maxLength": 160
+        },
+        "preferencesReviewed": {
+          "type": "boolean",
+          "description": "Whether the user has reviewed or skipped optional styling details."
+        },
+        "stylePreference": {
+          "type": "string",
+          "description": "Legacy optional preferred everyday aesthetic.",
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last update timestamp."
+        }
+      },
+      "required": ["ownerId", "name", "avatarInitials", "isGuest", "createdAt", "updatedAt"]
+    },
+    "ClosetItem": {
+      "title": "ClosetItem",
+      "description": "A garment or accessory cataloged in the user's digital closet.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "enum": ["tops", "bottoms", "outerwear", "footwear", "accessories", "full_outfit"]
+        },
+        "colorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "colorHex": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "maxLength": 7
+        },
+        "fabric": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "season": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "formality": {
+          "type": "string",
+          "enum": ["casual", "smart_casual", "business_casual", "formal_evening"]
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "isFavorite": {
+          "type": "boolean"
+        },
+        "createdAtIso": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "id", "name", "category", "colorName", "colorHex", "formality", "isFavorite", "createdAt", "updatedAt"]
+    },
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "Saved styling consultation session summary.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "expertId": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "expertName": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "occasion": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "previewTitle": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "lastMessageSnippet": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "timestamp": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "messageCount": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "id", "expertId", "expertName", "occasion", "previewTitle", "timestamp", "messageCount", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Individual message turn inside a styling consultation session.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "assistant"]
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 12000
+        },
+        "timestamp": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "occasion": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "expertName": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "expertAvatar": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "outfitName": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "hasAudio": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "id", "role", "content", "timestamp", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/profile/{profileId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-isolated personal styling profile document."
+    },
+    "/users/{userId}/closetItems/{itemId}": {
+      "schema": { "$ref": "#/entities/ClosetItem" },
+      "description": "Owner-isolated digital wardrobe items."
+    },
+    "/users/{userId}/chatSessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/ChatSession" },
+      "description": "Owner-isolated saved styling sessions."
+    },
+    "/users/{userId}/chatSessions/{sessionId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages belonging to a user's styling session."
+    }
+  }
+}

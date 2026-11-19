@@ -1,0 +1,218 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: deny all access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isSignedIn()
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['ownerId', 'name', 'avatarInitials', 'isGuest', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'ownerId', 'name', 'email', 'avatarInitials', 'status', 'isGuest',
+          'joinedAt', 'genderPreference', 'age', 'heightCm', 'skinToneMonk',
+          'undertone', 'stylePreference', 'bodyShape', 'colorPreferences',
+          'clothingPreferences', 'preferencesReviewed', 'createdAt', 'updatedAt'
+        ])
+        && data.ownerId == userId
+        && isValidId(data.ownerId)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && data.avatarInitials is string && data.avatarInitials.size() >= 1 && data.avatarInitials.size() <= 4
+        && data.isGuest is bool
+        && (!('email' in data) || (data.email is string && data.email.size() <= 160))
+        && (!('status' in data) || (data.status is string && data.status.size() <= 40))
+        && (!('joinedAt' in data) || (data.joinedAt is string && data.joinedAt.size() <= 40))
+        && (!('genderPreference' in data) || (data.genderPreference is string && data.genderPreference.size() <= 60))
+        && (!('age' in data) || (data.age is int && data.age >= 10 && data.age <= 120))
+        && (!('heightCm' in data) || (data.heightCm is int && data.heightCm >= 100 && data.heightCm <= 240))
+        && (!('skinToneMonk' in data) || (data.skinToneMonk is int && data.skinToneMonk >= 1 && data.skinToneMonk <= 10))
+        && (!('undertone' in data) || data.undertone in ['warm', 'cool', 'neutral', 'olive'])
+        && (!('stylePreference' in data) || (data.stylePreference is string && data.stylePreference.size() <= 120))
+        && (!('bodyShape' in data) || (data.bodyShape is string && data.bodyShape.size() <= 60))
+        && (!('colorPreferences' in data) || (data.colorPreferences is string && data.colorPreferences.size() <= 160))
+        && (!('clothingPreferences' in data) || (data.clothingPreferences is string && data.clothingPreferences.size() <= 160))
+        && (!('preferencesReviewed' in data) || data.preferencesReviewed is bool);
+    }
+
+    function isValidClosetItem(data, userId, itemId) {
+      return data.keys().hasAll(['ownerId', 'id', 'name', 'category', 'colorName', 'colorHex', 'formality', 'isFavorite', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'ownerId', 'id', 'name', 'category', 'colorName', 'colorHex',
+          'fabric', 'season', 'formality', 'notes', 'isFavorite', 'createdAtIso',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.id == itemId
+        && isValidId(data.ownerId)
+        && isValidId(data.id)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 120
+        && data.category in ['tops', 'bottoms', 'outerwear', 'footwear', 'accessories', 'full_outfit']
+        && data.colorName is string && data.colorName.size() >= 1 && data.colorName.size() <= 60
+        && data.colorHex is string && data.colorHex.size() == 7 && data.colorHex.matches('^#[0-9a-fA-F]{6}$')
+        && data.formality in ['casual', 'smart_casual', 'business_casual', 'formal_evening']
+        && data.isFavorite is bool
+        && (!('fabric' in data) || (data.fabric is string && data.fabric.size() <= 60))
+        && (!('season' in data) || (data.season is string && data.season.size() <= 40))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 400))
+        && (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 40));
+    }
+
+    function isValidChatSession(data, userId, sessionId) {
+      return data.keys().hasAll(['ownerId', 'id', 'expertId', 'expertName', 'occasion', 'previewTitle', 'timestamp', 'messageCount', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'ownerId', 'id', 'expertId', 'expertName', 'occasion',
+          'previewTitle', 'lastMessageSnippet', 'timestamp', 'messageCount',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.id == sessionId
+        && isValidId(data.ownerId)
+        && isValidId(data.id)
+        && data.expertId is string && data.expertId.size() >= 1 && data.expertId.size() <= 64
+        && data.expertName is string && data.expertName.size() >= 1 && data.expertName.size() <= 80
+        && data.occasion is string && data.occasion.size() >= 1 && data.occasion.size() <= 80
+        && data.previewTitle is string && data.previewTitle.size() >= 1 && data.previewTitle.size() <= 160
+        && data.timestamp is string && data.timestamp.size() >= 1 && data.timestamp.size() <= 40
+        && data.messageCount is int && data.messageCount >= 0 && data.messageCount <= 5000
+        && (!('lastMessageSnippet' in data) || (data.lastMessageSnippet is string && data.lastMessageSnippet.size() <= 240));
+    }
+
+    function isValidChatMessage(data, userId, messageId) {
+      return data.keys().hasAll(['ownerId', 'id', 'role', 'content', 'timestamp', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'ownerId', 'id', 'role', 'content', 'timestamp', 'occasion',
+          'expertName', 'expertAvatar', 'outfitName', 'hasAudio',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId == userId
+        && data.id == messageId
+        && isValidId(data.ownerId)
+        && isValidId(data.id)
+        && data.role in ['user', 'assistant']
+        && data.content is string && data.content.size() >= 1 && data.content.size() <= 12000
+        && data.timestamp is string && data.timestamp.size() >= 1 && data.timestamp.size() <= 40
+        && (!('occasion' in data) || (data.occasion is string && data.occasion.size() <= 80))
+        && (!('expertName' in data) || (data.expertName is string && data.expertName.size() <= 80))
+        && (!('expertAvatar' in data) || (data.expertAvatar is string && data.expertAvatar.size() <= 300))
+        && (!('outfitName' in data) || (data.outfitName is string && data.outfitName.size() <= 120))
+        && (!('hasAudio' in data) || data.hasAudio is bool);
+    }
+
+    match /users/{userId}/profile/{profileId} {
+      allow get: if isVerifiedOwner(userId) && isValidId(profileId);
+      allow list: if isVerifiedOwner(userId) && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(profileId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(profileId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'email', 'avatarInitials', 'status', 'joinedAt',
+          'genderPreference', 'age', 'heightCm', 'skinToneMonk',
+          'undertone', 'stylePreference', 'bodyShape', 'colorPreferences',
+          'clothingPreferences', 'preferencesReviewed', 'updatedAt'
+        ]);
+      allow delete: if isVerifiedOwner(userId) && isValidId(profileId);
+    }
+
+    match /users/{userId}/closetItems/{itemId} {
+      allow get: if isVerifiedOwner(userId) && isValidId(itemId);
+      allow list: if isVerifiedOwner(userId) && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(itemId)
+        && isValidClosetItem(incoming(), userId, itemId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(itemId)
+        && isValidClosetItem(incoming(), userId, itemId)
+        && incoming().ownerId == existing().ownerId
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'category', 'colorName', 'colorHex', 'fabric',
+          'season', 'formality', 'notes', 'isFavorite', 'updatedAt'
+        ]);
+      allow delete: if isVerifiedOwner(userId) && isValidId(itemId);
+    }
+
+    match /users/{userId}/chatSessions/{sessionId} {
+      allow get: if isVerifiedOwner(userId) && isValidId(sessionId);
+      allow list: if isVerifiedOwner(userId) && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(sessionId)
+        && isValidChatSession(incoming(), userId, sessionId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(sessionId)
+        && isValidChatSession(incoming(), userId, sessionId)
+        && incoming().ownerId == existing().ownerId
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'expertId', 'expertName', 'occasion', 'previewTitle',
+          'lastMessageSnippet', 'timestamp', 'messageCount', 'updatedAt'
+        ]);
+      allow delete: if isVerifiedOwner(userId) && isValidId(sessionId);
+
+      match /messages/{messageId} {
+        allow get: if isVerifiedOwner(userId)
+          && isValidId(sessionId)
+          && isValidId(messageId)
+          && exists(/databases/$(database)/documents/users/$(userId)/chatSessions/$(sessionId));
+        allow list: if isVerifiedOwner(userId)
+          && resource.data.ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(sessionId)
+          && isValidId(messageId)
+          && isValidChatMessage(incoming(), userId, messageId)
+          && exists(/databases/$(database)/documents/users/$(userId)/chatSessions/$(sessionId))
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(sessionId)
+          && isValidId(messageId)
+          && isValidChatMessage(incoming(), userId, messageId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().id == existing().id
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'content', 'outfitName', 'updatedAt'
+          ]);
+        allow delete: if isVerifiedOwner(userId) && isValidId(sessionId) && isValidId(messageId);
+      }
+    }
+  }
+}
